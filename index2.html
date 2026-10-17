@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>スプレッドシート読み込みツール</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; }
+        .box { background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd; }
+        input[type="text"] { width: 75%; padding: 8px; }
+        button { padding: 9px 15px; background: #0f9d58; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        pre { background: #eee; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+
+    <div class="box">
+        <h2>スプレッドシートデータ読み込み</h2>
+        <input type="text" id="sheetUrl" placeholder="https://docs.google.com/spreadsheets/d/...">
+        <button id="loadSheetBtn">データ取得</button>
+        <p id="sheetStatus"></p>
+        <pre id="output"></pre>
+    </div>
+
+    <script>
+        document.getElementById('loadSheetBtn').addEventListener('click', () => {
+            const url = document.getElementById('sheetUrl').value.trim();
+            const status = document.getElementById('sheetStatus');
+            const output = document.getElementById('output');
+            
+            const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+            if (!match) {
+                alert('正しいスプレッドシートのURLではありません。');
+                return;
+            }
+
+            const csvUrl = `https://docs.google.com/spreadsheets/d/${match[1]}/export?format=csv`;
+            status.innerText = '読み込み中...';
+            output.innerText = '';
+
+            fetch(csvUrl)
+                .then(res => {
+                    if (!res.ok) throw new Error('データの取得に失敗しました。共有設定をご確認ください。');
+                    return res.text();
+                })
+                .then(text => {
+                    status.innerText = '✓ データの取得に成功しました！';
+                    output.innerText = text; // 取得したCSVデータをそのまま表示
+                })
+                .catch(err => {
+                    status.innerText = 'エラー: ' + err.message;
+                });
+        });
+    </script>
+</body>
+</html>
